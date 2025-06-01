@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Live Match</title>
+  <script src="https://content.jwplatform.com/libraries/SAHhwvZq.js"></script>
+  <style>
+    body, html {
+      margin: 0; padding: 0;
+      height: 100%; width: 100%;
+      background-color: black;
+    }
+    #player {
+      width: 100%; height: 100vh;
+    }
+    #joinBanner {
+      position: fixed;
+      top: 10px; right: 10px;
+      background: rgba(0, 0, 0, 0.8);
+      padding: 10px 15px;
+      color: white; font-size: 14px;
+      border-radius: 5px;
+      z-index: 9999;
+    }
+    #popup {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      color: white;
+      z-index: 9998;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      flex-direction: column;
+    }
+    #popup.show { display: flex; }
+    .popup-btn {
+      margin-top: 20px;
+      background: #0088cc;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+
+<div id="joinBanner">Join Telegram: <a href="https://t.me/yourchannel" target="_blank" style="color:#1da1f2;">@yourchannel</a></div>
+
+<div id="popup">
+  <h2>📣 Join our Telegram for Live Match Updates</h2>
+  <a href="https://t.me/yourchannel" target="_blank">
+    <button class="popup-btn">Join Now</button>
+  </a>
+</div>
+
+<div id="player"></div>
+
+<script>
+  const queryParams = new URLSearchParams(window.location.search);
+  const matchId = queryParams.get("id");
+
+  if (!matchId) {
+    alert("Match ID not provided in URL. Use ?id=8431");
+    throw new Error("No match ID");
+  }
+
+  fetch("https://raw.githubusercontent.com/drmlive/sliv-live-events/main/sonyliv.json")
+    .then((res) => res.json())
+    .then((data) => {
+      const match = data.find(item => item.contentId == matchId);
+      if (!match) {
+        alert("Match not found");
+        return;
+      }
+
+      let streamURL = match.video_url.replace(/\.akamaized\.net/g, ".proxy.consumet.stream");
+
+      jwplayer("player").setup({
+        file: streamURL,
+        type: "hls",
+        width: "100%",
+        aspectratio: "16:9",
+        autostart: true,
+        controls: true,
+        mute: false,
+        primary: "html5"
+      });
+
+      setTimeout(() => {
+        document.getElementById("popup").classList.add("show");
+      }, 10000);
+    })
+    .catch((err) => {
+      console.error("Error loading match:", err);
+      alert("Error loading match. Try again later.");
+    });
+</script>
+
+</body>
+</html>
