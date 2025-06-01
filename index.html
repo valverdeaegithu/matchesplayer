@@ -1,106 +1,264 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Live Match</title>
-  <script src="https://content.jwplatform.com/libraries/SAHhwvZq.js"></script>
-  <style>
-    body, html {
-      margin: 0; padding: 0;
-      height: 100%; width: 100%;
-      background-color: black;
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Watch Match</title>
+<style>
+  #message, .telegram-toggle {
+    color: #fff;
+    align-items: center;
+    z-index: 1001;
+    display: flex;
+    position: fixed;
+  }
+  .popup a, .telegram-toggle, .tg-banner {
+    text-decoration: none;
+  }
+  body {
+    margin: 0;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    background-color: #f4f4f4;
+    overflow: hidden;
+  }
+  .jwplayer {
+    position: absolute !important;
+  }
+  .jwplayer.jw-flag-aspect-mode {
+    min-height: 100%;
+    max-height: 100%;
+  }
+  .telegram-toggle {
+    top: 10px;
+    right: 10px;
+    background-color: #08c;
+    padding: 10px 15px;
+    border-radius: 50px;
+    font-weight: 700;
+  }
+  .telegram-toggle img {
+    width: 20px;
+    height: 20px;
+    margin-right: 5px;
+  }
+  #message {
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,.8);
+    justify-content: center;
+    font-size: 24px;
+  }
+  .popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    background-color: #1c1c1c;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 0 15px rgba(255,255,255,.2);
+    z-index: 1002;
+    width: 90%;
+    max-width: 400px;
+    animation: .5s fadeIn;
+  }
+  .popup h2 {
+    color: #fc0;
+    margin-bottom: 10px;
+    font-size: 20px;
+  }
+  .popup p {
+    margin-bottom: 20px;
+    color: #ccc;
+    font-size: 16px;
+  }
+  .popup button {
+    background-color: #08c;
+    color: #fff;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color .3s;
+    margin-bottom: 10px;
+    width: 100%;
+  }
+  .popup button:hover {
+    background-color: #069;
+  }
+  .popup .close-btn {
+    background-color: #555;
+  }
+  .popup .close-btn:hover {
+    background-color: #333;
+  }
+  .popup a {
+    color: #fc0;
+  }
+  @keyframes fadeIn {
+    from {opacity:0;}
+    to {opacity:1;}
+  }
+  @media (max-width:600px){
+    .popup {
+      width: 90%;
     }
-    #player {
-      width: 100%; height: 100vh;
+    .popup h2 {
+      font-size: 18px;
     }
-    #joinBanner {
-      position: fixed;
-      top: 10px; right: 10px;
-      background: rgba(0, 0, 0, 0.8);
-      padding: 10px 15px;
-      color: white; font-size: 14px;
-      border-radius: 5px;
-      z-index: 9999;
+    .popup p {
+      font-size: 14px;
     }
-    #popup {
-      display: none;
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.9);
-      color: white;
-      z-index: 9998;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      flex-direction: column;
+    .popup button {
+      padding: 10px;
     }
-    #popup.show { display: flex; }
-    .popup-btn {
-      margin-top: 20px;
-      background: #0088cc;
-      color: white;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 4px;
-      font-size: 16px;
-    }
-  </style>
+  }
+  .tg-banner {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: linear-gradient(135deg,#1da1f2,#0077b5);
+    border-radius: 8px;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(0,0,0,.3);
+    z-index: 1000;
+    transition: transform .3s, box-shadow .3s;
+  }
+  .tg-banner:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 15px rgba(0,0,0,.4);
+  }
+  .tg-banner img {
+    width: 24px;
+    height: 24px;
+    margin-right: 8px;
+    border-radius: 50%;
+    border: 1px solid #fff;
+  }
+  .tg-banner span {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: .3px;
+  }
+  .join-button {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 5px;
+    margin-top: 20px;
+    transition: background-color 0.3s ease;
+  }
+  .join-button:hover {
+    background-color: #0056b3;
+  }
+</style>
+<script src="https://content.jwplatform.com/libraries/SAHhwvZq.js"></script>
 </head>
 <body>
-
-<div id="joinBanner">Join Telegram: <a href="https://t.me/yourchannel" target="_blank" style="color:#1da1f2;">@yourchannel</a></div>
-
-<div id="popup">
-  <h2>📣 Join our Telegram for Live Match Updates</h2>
-  <a href="https://t.me/yourchannel" target="_blank">
-    <button class="popup-btn">Join Now</button>
-  </a>
+<div id="content">
+  Loading...
 </div>
 
-<div id="player"></div>
-
 <script>
-  const queryParams = new URLSearchParams(window.location.search);
-  const matchId = queryParams.get("id");
-
-  if (!matchId) {
-    alert("Match ID not provided in URL. Use ?id=8431");
-    throw new Error("No match ID");
+(async function() {
+  // Helper to get URL param 'id'
+  function getQueryParam(name) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(name);
   }
 
-  fetch("https://raw.githubusercontent.com/drmlive/sliv-live-events/main/sonyliv.json")
-    .then((res) => res.json())
-    .then((data) => {
-      const match = data.find(item => item.contentId == matchId);
-      if (!match) {
-        alert("Match not found");
-        return;
+  const matchId = getQueryParam('id');
+  if (!matchId) {
+    document.getElementById('content').innerHTML = '<div class="message-container"><p>No match ID provided in URL.</p></div>';
+    return;
+  }
+
+  // Fetch JSON data
+  let data;
+  try {
+    const res = await fetch('https://raw.githubusercontent.com/drmlive/sliv-live-events/main/sonyliv.json');
+    data = await res.json();
+  } catch(e) {
+    document.getElementById('content').innerHTML = '<div class="message-container"><p>Failed to load match data.</p></div>';
+    return;
+  }
+
+  // Find match by contentId
+  const match = data.matches.find(m => String(m.contentId) === matchId);
+  if (!match) {
+    document.getElementById('content').innerHTML = '<div class="message-container"><p>Match not found.</p></div>';
+    return;
+  }
+
+  // Determine video URL to play
+  const videoUrl = match.video_url || match.dai_url || match.pub_url || null;
+
+  // If no playable URL, show message
+  if (!videoUrl || !videoUrl.includes('.m3u8')) {
+    document.getElementById('content').innerHTML = `
+      <div class="message-container">
+        <p>The match either has not started or has ended on SonyLiv.</p>
+        <p>मैच sonylive पर लाइव होते ही शुरू हो जाएगा।</p>
+        <p>Join our Telegram for more updates:</p>
+        <a href="https://t.me/+P6IPpHAJ-oZjNDY1" class="join-button" target="_blank" rel="noopener">Join Telegram / टेलीग्राम से जुड़ें</a>
+      </div>
+    `;
+    return;
+  }
+
+  // Clear loading
+  document.getElementById('content').innerHTML = '<div id="jwplayerDiv"></div>';
+
+  // Intercept XMLHttpRequest open to rewrite URLs
+  (function interceptNetworkRequests() {
+    const originalOpen = XMLHttpRequest.prototype.open;
+    XMLHttpRequest.prototype.open = function(method, url) {
+      if (url.includes('sonydaimenew.akamaized.net')) {
+        url = url.replace('sonydaimenew.akamaized.net', 'sony.cricsterspkl.io/event.php');
+      } else if (url.includes('sonypartnersdaimenew.akamaized.net')) {
+        url = url.replace('sonypartnersdaimenew.akamaized.net', 'sony.cricsterspkl.io/event.php');
       }
+      return originalOpen.apply(this, arguments);
+    };
+  })();
 
-      let streamURL = match.video_url.replace(/\.akamaized\.net/g, ".proxy.consumet.stream");
-
-      jwplayer("player").setup({
-        file: streamURL,
+  // Setup JWPlayer
+  jwplayer("jwplayerDiv").setup({
+    playlist: [{
+      title: match.event_name || 'Live Match',
+      description: "You're Watching",
+      sources: [{
+        file: videoUrl,
         type: "hls",
-        width: "100%",
-        aspectratio: "16:9",
-        autostart: true,
-        controls: true,
-        mute: false,
-        primary: "html5"
-      });
+        label: "1080p",
+        default: true
+      }]
+    }],
+    width: "100%",
+    height: "100%",
+    autostart: true,
+    controls: true
+  });
 
-      setTimeout(() => {
-        document.getElementById("popup").classList.add("show");
-      }, 10000);
-    })
-    .catch((err) => {
-      console.error("Error loading match:", err);
-      alert("Error loading match. Try again later.");
-    });
+})();
+
+// Popup confirm on load - outside async IIFE for better timing
+window.addEventListener("load", function() {
+  setTimeout(() => {
+    if (confirm("Join @thecricsters for more updates?")) {
+      window.location.href = "https://t.me/+P6IPpHAJ-oZjNDY1";
+    }
+  }, 500);
+});
 </script>
-
 </body>
 </html>
